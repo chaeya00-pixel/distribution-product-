@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>상품 통합운영 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 0.88rem;
+            color: #94a3b8;
+        }
+
+        /* Search Box */
+        .search-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 18px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: flex-end;
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .search-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #a78bfa;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .search-group input {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1.5px solid rgba(167, 139, 250, 0.3);
+            border-radius: 10px;
+            padding: 11px 16px;
+            color: #f1f5f9;
+            font-size: 0.95rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .search-group input::placeholder {
+            color: #64748b;
+        }
+
+        .search-group input:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 11px 26px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+            transform: translateY(-1px);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: #e2e8f0;
+        }
+
+        /* Summary cards */
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 26px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 18px 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-card .sc-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .summary-card .sc-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* No result / initial state */
+        .state-box {
+            text-align: center;
+            padding: 60px 20px;
+            color: #475569;
+        }
+
+        .state-box .icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .state-box p {
+            font-size: 0.95rem;
+        }
+
+        /* Result card */
+        .result-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            margin-bottom: 22px;
+            overflow: hidden;
+            animation: fadeInUp 0.35s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: rgba(99, 102, 241, 0.12);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .result-card-header .share-date {
+            font-size: 0.78rem;
+            background: rgba(167, 139, 250, 0.2);
+            color: #c4b5fd;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .result-card-header .note-badge {
+            font-size: 0.75rem;
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        /* Two columns side by side */
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        @media (max-width: 760px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .product-panel {
+            padding: 22px 26px;
+        }
+
+        .product-panel:first-child {
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .panel-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid;
+        }
+
+        .panel-title.old {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .panel-title.new {
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        .field-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .field-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .field-item .fl-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .field-item .fl-value {
+            font-size: 0.93rem;
+            color: #e2e8f0;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .field-item .fl-value.code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: #a78bfa;
+            font-weight: 700;
+        }
+
+        .field-item .fl-value.price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .field-item .fl-value.stock {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #34d399;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tag-storage {
+            background: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+        }
+
+        .tag-daily {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+        }
+
+        /* All data table */
+        .table-wrap {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+            font-size: 0.82rem;
+        }
+
+        thead tr {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        th {
+            padding: 12px 14px;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #a78bfa;
+            white-space: nowrap;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        td {
+            padding: 11px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .highlight-row td {
+            background: rgba(167, 139, 250, 0.07);
+        }
+
+        td.mono {
+            font-family: 'Courier New', monospace;
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title span {
+            font-size: 1.1rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.07);
+            margin: 30px 0;
+        }
+
+        /* Add Button */
+        .btn-add {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+            padding: 8px 20px;
+            font-size: 0.84rem;
+        }
+
+        .btn-add:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1.5px solid rgba(239, 68, 68, 0.25);
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            border-radius: 7px;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(145deg, #1e1b4b, #2d2a5e);
+            border: 1px solid rgba(167, 139, 250, 0.25);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px;
+            animation: fadeInUp 0.3s ease;
+            position: relative;
+        }
+
+        .modal h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #e2e8f0;
+        }
+
+        .modal-section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 18px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid;
+        }
+
+        .modal-section-label.old {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .modal-section-label.new {
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        .modal-section-label.meta {
+            color: #a78bfa;
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media(max-width:600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-field label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .form-field input,
+        .form-field select {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: #f1f5f9;
+            font-size: 0.88rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+        }
+
+        .form-field select option {
+            background: #1e1b4b;
+        }
+
+        .form-full {
+            grid-column: 1 / -1;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <header class="header">
+            <h1>📦 상품 통합운영 대시보드</h1>
+            <p>자재코드(기존/대체) 또는 상품명으로 조회하세요</p>
+        </header>
+
+        <!-- Search -->
+        <div class="search-card">
+            <div class="search-group">
+                <label>자재코드 또는 상품명</label>
+                <input type="text" id="searchInput" placeholder="예: 1000266143  또는  피클" />
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="doSearch()">🔍 조회</button>
+                <button class="btn btn-reset" onclick="resetSearch()">✕ 초기화</button>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-row">
+            <div class="summary-card">
+                <div class="sc-label">총 공유 건수</div>
+                <div class="sc-value" id="sumTotal">-</div>
+            </div>
+            <div class="summary-card">
+                <div class="sc-label">조회 결과</div>
+                <div class="sc-value" id="sumFound">-</div>
+            </div>
+            <div class="summary-card">
+                <div class="sc-label">저장 → 일배</div>
+                <div class="sc-value" id="sumOps">-</div>
+            </div>
+            <div class="summary-card">
+                <div class="sc-label">비고 있음</div>
+                <div class="sc-value" id="sumNote">-</div>
+            </div>
+        </div>
+
+        <!-- Results area -->
+        <div id="resultsArea">
+            <div class="state-box">
+                <div class="icon">🔎</div>
+                <p>자재코드 또는 상품명을 입력하고 조회 버튼을 눌러주세요.</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Full table -->
+        <div class="section-title" style="justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;"><span>📋</span> 전체 데이터</div>
+            <button class="btn btn-add" onclick="openModal()">➕ 데이터 추가</button>
+        </div>
+        <div class="table-wrap" id="fullTable"></div>
+
+        <!-- Add Data Modal -->
+        <div class="modal-overlay" id="modalOverlay" onclick="overlayClose(event)">
+            <div class="modal">
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <h2>➕ 새 데이터 추가</h2>
+
+                <div class="modal-section-label meta">공통 정보</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>공유일 *</label>
+                        <input type="text" id="f_shareDate" placeholder="예: 3/4" />
+                    </div>
+                    <div class="form-field">
+                        <label>수급담당자 *</label>
+                        <input type="text" id="f_manager" placeholder="담당자 이름" />
+                    </div>
+                </div>
+
+                <div class="modal-section-label old">🔴 기존 상품</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>기존 자재코드 *</label>
+                        <input type="text" id="f_oldCode" placeholder="1000XXXXXX" />
+                    </div>
+                    <div class="form-field">
+                        <label>기존 협력사</label>
+                        <input type="text" id="f_oldPartner" placeholder="협력사명" />
+                    </div>
+                    <div class="form-field form-full">
+                        <label>기존 상품명 *</label>
+                        <input type="text" id="f_oldName" placeholder="상품명 입력" />
+                    </div>
+                    <div class="form-field">
+                        <label>기존 구매가 (원) *</label>
+                        <input type="number" id="f_oldPrice" placeholder="0" min="0" />
+                    </div>
+                    <div class="form-field">
+                        <label>기존 운영방식</label>
+                        <select id="f_oldOps">
+                            <option value="저장">저장</option>
+                            <option value="일배">일배</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-section-label new">🟢 대체 상품</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>대체 자재코드 *</label>
+                        <input type="text" id="f_newCode" placeholder="1000XXXXXX" />
+                    </div>
+                    <div class="form-field">
+                        <label>대체 협력사</label>
+                        <input type="text" id="f_newPartner" placeholder="협력사명" />
+                    </div>
+                    <div class="form-field form-full">
+                        <label>대체 상품명 *</label>
+                        <input type="text" id="f_newName" placeholder="상품명 입력" />
+                    </div>
+                    <div class="form-field">
+                        <label>대체 구매가 (원) *</label>
+                        <input type="number" id="f_newPrice" placeholder="0" min="0" />
+                    </div>
+                    <div class="form-field">
+                        <label>현재고 (개)</label>
+                        <input type="number" id="f_stock" placeholder="0" min="0" />
+                    </div>
+                    <div class="form-field">
+                        <label>대체 운영방식</label>
+                        <select id="f_newOps">
+                            <option value="일배">일배</option>
+                            <option value="저장">저장</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div class="form-field form-full">
+                        <label>비고</label>
+                        <input type="text" id="f_note" placeholder="특이사항 입력 (선택)" />
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-reset" onclick="closeModal()">취소</button>
+                    <button class="btn btn-add" onclick="saveData()">💾 저장</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
+
+    </div>
+
+    <script>
+        const data = [
+            {
+                shareDate: "2/4",
+                oldCode: "1000266143",
+                oldName: "(MZ)센 피클 렐리쉬 340g",
+                oldPartner: "주식회사 알프스",
+                manager: "신상종",
+                oldPrice: 1980,
+                oldOps: "저장",
+                newCode: "1000308386",
+                newName: "피클렐리쉬(라리/340g/베트남/상온)ea",
+                newPartner: "푸드올마켓(상도)",
+                newPrice: 1430,
+                stock: 11,
+                newOps: "일배",
+                note: ""
+            },
+            {
+                shareDate: "2/11",
+                oldCode: "1000275476",
+                oldName: "(MZ)알프스_챠챠 해바라기씨(고소한맛/260g)",
+                oldPartner: "주식회사 알프스",
+                manager: "신상종",
+                oldPrice: 2909,
+                oldOps: "저장",
+                newCode: "1000314140",
+                newName: "해바라기씨(챠챠/고소한맛/실온/260g/태국)ea",
+                newPartner: "포엠통상",
+                newPrice: 2720,
+                stock: 54,
+                newOps: "일배",
+                note: "미리 협력사 재고준비 필요"
+            }
+        ];
+
+        function fmt(n) { return n.toLocaleString('ko-KR') + '원'; }
+
+        function opsTag(ops) {
+            const cls = ops === '저장' ? 'tag-storage' : 'tag-daily';
+            return `<span class="tag ${cls}">${ops}</span>`;
+        }
+
+        function buildCard(item, idx) {
+            const priceDiff = item.newPrice - item.oldPrice;
+            const diffStr = priceDiff < 0
+                ? `<span style="color:#34d399">▼ ${Math.abs(priceDiff).toLocaleString()}원</span>`
+                : priceDiff > 0
+                    ? `<span style="color:#f87171">▲ ${priceDiff.toLocaleString()}원</span>`
+                    : `<span style="color:#94a3b8">변동없음</span>`;
+
+            return `
+    <div class="result-card" style="animation-delay:${idx * 0.07}s">
+      <div class="result-card-header">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="share-date">📅 공유일: ${item.shareDate}</span>
+          <span style="font-size:0.82rem;color:#94a3b8">수급담당자: <b style="color:#e2e8f0">${item.manager}</b></span>
+          <span style="font-size:0.82rem;color:#94a3b8">구매가 변동: ${diffStr}</span>
+        </div>
+        ${item.note ? `<span class="note-badge">⚠️ ${item.note}</span>` : ''}
+      </div>
+      <div class="product-grid">
+        <div class="product-panel">
+          <div class="panel-title old">🔴 기존 상품</div>
+          <div class="field-list">
+            <div class="field-item">
+              <span class="fl-label">자재코드</span>
+              <span class="fl-value code">${item.oldCode}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">상품명</span>
+              <span class="fl-value">${item.oldName}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">협력사</span>
+              <span class="fl-value">${item.oldPartner}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">구매가</span>
+              <span class="fl-value price">${fmt(item.oldPrice)}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">운영방식</span>
+              <span class="fl-value">${opsTag(item.oldOps)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-panel">
+          <div class="panel-title new">🟢 대체 상품</div>
+          <div class="field-list">
+            <div class="field-item">
+              <span class="fl-label">자재코드</span>
+              <span class="fl-value code">${item.newCode}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">상품명</span>
+              <span class="fl-value">${item.newName}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">협력사</span>
+              <span class="fl-value">${item.newPartner}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">구매가</span>
+              <span class="fl-value price">${fmt(item.newPrice)}</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">현재고</span>
+              <span class="fl-value stock">${item.stock}개</span>
+            </div>
+            <div class="field-item">
+              <span class="fl-label">운영방식</span>
+              <span class="fl-value">${opsTag(item.newOps)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+        }
+
+        function buildTable(items, keyword) {
+            const kw = (keyword || '').toLowerCase();
+            const rows = items.map(item => {
+                const hit = kw && (
+                    item.oldCode.includes(kw) || item.newCode.includes(kw) ||
+                    item.oldName.toLowerCase().includes(kw) || item.newName.toLowerCase().includes(kw)
+                );
+                return `
+      <tr class="${hit ? 'highlight-row' : ''}">
+        <td>${item.shareDate}</td>
+        <td class="mono">${item.oldCode}</td>
+        <td>${item.oldName}</td>
+        <td>${item.oldPartner}</td>
+        <td>${item.manager}</td>
+        <td style="color:#60a5fa;font-weight:600">${fmt(item.oldPrice)}</td>
+        <td>${opsTag(item.oldOps)}</td>
+        <td class="mono">${item.newCode}</td>
+        <td>${item.newName}</td>
+        <td>${item.newPartner}</td>
+        <td style="color:#60a5fa;font-weight:600">${fmt(item.newPrice)}</td>
+        <td style="color:#34d399;font-weight:600">${item.stock}</td>
+        <td>${opsTag(item.newOps)}</td>
+        <td style="color:#fbbf24;font-size:0.78rem">${item.note || '-'}</td>
+      </tr>`;
+            }).join('');
+
+            return `
+    <table>
+      <thead>
+        <tr>
+          <th>공유일</th>
+          <th>기존코드</th><th>기존상품명</th><th>협력사</th><th>수급담당자</th>
+          <th>구매가</th><th>운영방식</th>
+          <th>대체코드</th><th>대체상품명</th><th>협력사</th>
+          <th>구매가</th><th>현재고</th><th>운영방식</th><th>비고</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+        }
+
+        function updateSummary(found) {
+            document.getElementById('sumTotal').textContent = data.length;
+            document.getElementById('sumFound').textContent = found !== null ? found : '-';
+            document.getElementById('sumOps').textContent = data.filter(d => d.oldOps === '저장' && d.newOps === '일배').length;
+            document.getElementById('sumNote').textContent = data.filter(d => d.note).length;
+        }
+
+        function doSearch() {
+            const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+            const area = document.getElementById('resultsArea');
+
+            if (!kw) {
+                area.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>검색어를 입력해주세요.</p></div>`;
+                updateSummary(null);
+                document.getElementById('fullTable').innerHTML = buildTable(data, '');
+                return;
+            }
+
+            const matched = data.filter(item =>
+                item.oldCode.toLowerCase().includes(kw) ||
+                item.newCode.toLowerCase().includes(kw) ||
+                item.oldName.toLowerCase().includes(kw) ||
+                item.newName.toLowerCase().includes(kw) ||
+                item.oldPartner.toLowerCase().includes(kw) ||
+                item.newPartner.toLowerCase().includes(kw)
+            );
+
+            updateSummary(matched.length);
+
+            if (matched.length === 0) {
+                area.innerHTML = `<div class="state-box"><div class="icon">😔</div><p><b style="color:#e2e8f0">"${kw}"</b>에 해당하는 데이터가 없습니다.</p></div>`;
+            } else {
+                area.innerHTML = `
+        <div class="section-title" style="margin-bottom:16px"><span>✅</span> 조회 결과 (${matched.length}건)</div>
+        ${matched.map((item, i) => buildCard(item, i)).join('')}`;
+            }
+
+            document.getElementById('fullTable').innerHTML = buildTable(data, kw);
+        }
+
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultsArea').innerHTML = `<div class="state-box"><div class="icon">🔎</div><p>자재코드 또는 상품명을 입력하고 조회 버튼을 눌러주세요.</p></div>`;
+            updateSummary(null);
+            document.getElementById('fullTable').innerHTML = buildTable(data, '');
+        }
+
+        // Enter key
+        document.getElementById('searchInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        // Modal
+        function openModal() {
+            clearForm();
+            document.getElementById('modalOverlay').classList.add('open');
+        }
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+        function overlayClose(e) {
+            if (e.target === document.getElementById('modalOverlay')) closeModal();
+        }
+        function clearForm() {
+            ['f_shareDate', 'f_manager', 'f_oldCode', 'f_oldPartner', 'f_oldName', 'f_oldPrice',
+                'f_newCode', 'f_newPartner', 'f_newName', 'f_newPrice', 'f_stock', 'f_note'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+            document.getElementById('f_oldOps').value = '저장';
+            document.getElementById('f_newOps').value = '일배';
+        }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2800);
+        }
+        function saveData() {
+            const gv = id => document.getElementById(id).value.trim();
+            const required = [
+                { id: 'f_shareDate', label: '공유일' },
+                { id: 'f_manager', label: '수급담당자' },
+                { id: 'f_oldCode', label: '기존 자재코드' },
+                { id: 'f_oldName', label: '기존 상품명' },
+                { id: 'f_oldPrice', label: '기존 구매가' },
+                { id: 'f_newCode', label: '대체 자재코드' },
+                { id: 'f_newName', label: '대체 상품명' },
+                { id: 'f_newPrice', label: '대체 구매가' },
+            ];
+            for (const r of required) {
+                if (!gv(r.id)) {
+                    document.getElementById(r.id).focus();
+                    document.getElementById(r.id).style.borderColor = '#f87171';
+                    setTimeout(() => document.getElementById(r.id).style.borderColor = '', 1800);
+                    showToast(`⚠️ ${r.label}을(를) 입력해주세요`);
+                    return;
+                }
+            }
+            const newItem = {
+                shareDate: gv('f_shareDate'),
+                oldCode: gv('f_oldCode'),
+                oldName: gv('f_oldName'),
+                oldPartner: gv('f_oldPartner'),
+                manager: gv('f_manager'),
+                oldPrice: parseInt(gv('f_oldPrice')) || 0,
+                oldOps: document.getElementById('f_oldOps').value,
+                newCode: gv('f_newCode'),
+                newName: gv('f_newName'),
+                newPartner: gv('f_newPartner'),
+                newPrice: parseInt(gv('f_newPrice')) || 0,
+                stock: parseInt(gv('f_stock')) || 0,
+                newOps: document.getElementById('f_newOps').value,
+                note: gv('f_note'),
+            };
+            data.push(newItem);
+            closeModal();
+            updateSummary(null);
+            document.getElementById('fullTable').innerHTML = buildTable(data, '');
+            // 검색 결과도 갱신
+            const kw = document.getElementById('searchInput').value.trim();
+            if (kw) doSearch();
+            // 테이블 맨 아래로 스크롤
+            const tw = document.getElementById('fullTable');
+            tw.scrollTop = tw.scrollHeight;
+            showToast('✅ 데이터가 추가되었습니다!');
+        }
+
+        // Init full table
+        document.getElementById('fullTable').innerHTML = buildTable(data, '');
+        updateSummary(null);
+    </script>
+</body>
+
+</html>
